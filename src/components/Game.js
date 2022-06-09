@@ -94,15 +94,17 @@ function Game() {
         setRoundEnd(false)
     }
 
-    function checkLie () {
-        if (bid[0] == 1 && bid[1] == 0) {
+    function callLie (newBid, curTurn) {
+        if (newBid[0] == 1 && newBid[1] == 0) {
             alert("no bids yet!")
             return;
         }
 
-        let loserIdx = playerTurn - 1 //index of player who called the lie
-        let prevPlayer = ((playerTurn == 1) ? 4 : playerTurn - 1)
-        if (count[bid[1] - 1] < bid[0]) {
+        console.log("Player " + curTurn + " calls a lie!")
+
+        let loserIdx = curTurn - 1 //index of player who called the lie
+        let prevPlayer = ((curTurn == 1) ? 4 : curTurn - 1)
+        if (count[newBid[1] - 1] < newBid[0]) {
             alert("Player " + prevPlayer + " was lying!")
             loserIdx = prevPlayer - 1
         } else {
@@ -124,7 +126,7 @@ function Game() {
     //     console.log(roundEnd)
     // }, [setRoundEnd])
 
-    function Simulate (prevBid) {
+    async function Simulate (prevBid) {
         function calcProb(bid, side, turn) {
             let N = 0
             let R = bid
@@ -139,7 +141,6 @@ function Game() {
                     })
                 }
             }
-            // console.log(bid + "|" + side + "|" + R)
             
             if (R <= 0) {
                 return 100 //100% certain
@@ -154,8 +155,13 @@ function Game() {
             return Math.round(x * 100)
         }
 
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
         let newBid = [prevBid[0], prevBid[1]]
         for (let i = 2; i <= 4; i++) {
+            await sleep(2000); // wait 3 secs
             let high = [0, newBid[0], newBid[1]]
             for (let j = 1; j <= 6; j++) {
                 let curSide = newBid[1] + j
@@ -171,9 +177,16 @@ function Game() {
                 }
             }
 
-            submitBid(high[1], high[2], i)
-            // alert("Player " + (i) + " Bidded x" + high[1] + " " + high[2])
-            newBid = [high[1], high[2]]
+            // if probability of prev bid < highest prob
+            let prevProb = calcProb(newBid[0], newBid[1])
+            if (high[0] < 50 && prevProb < high[0]) {
+                // console.log(prevProb + "|" + high[0])
+                callLie(newBid, i)
+                return
+            } else {
+                submitBid(high[1], high[2], i)
+                newBid = [high[1], high[2]]
+            } 
         }
     }
 
@@ -321,8 +334,8 @@ function Game() {
             <div className="RenderBids">
                 {playerTurn == 1 && !roundEnd && 
                     <div> 
-                        <h2> Your Turn &nbsp;
-                            <button onClick={checkLie}> Liar! </button>
+                        <h2> It's Your Turn! &nbsp;
+                            <button onClick={callLie}> That's a Lie! </button>
                         </h2>
                         <RenderBids/>
                     </div>
