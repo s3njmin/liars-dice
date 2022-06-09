@@ -1,0 +1,37 @@
+.DiceCount {
+    display: block;
+    float: left;
+    /* width: 15%; */
+    margin-bottom: 5px;
+    /* outline: thin solid rgb(0, 0, 0) */
+}
+
+.BidMsg {
+    display: block;
+    float: middle;
+    /* margin-bottom: 80px */
+}
+
+.RenderBids {
+    display: block;
+    float: left;
+}
+
+.Hands {
+    display: block;
+    float: left;
+}
+
+.OtherHands {
+    float: right;
+    margin-right: 30px;
+    margin-left: 5px
+}
+
+.bid-log-parent {
+    display: flex
+}
+
+.bid-log-child {
+    flex: 1;
+}
