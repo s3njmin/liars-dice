@@ -285,10 +285,10 @@ function Game() {
 
     return (
         <div>
-            <h1> Liar's Dice </h1>
-
+            <h1 className="Title"> Liar's Dice </h1>
+            
             <div className="OtherHands">
-                <AIHands/>
+                <AIHands className="blank-dice"/>
             </div>
 
             <div className="BidMsg">
@@ -335,7 +335,7 @@ function Game() {
                 {playerTurn == 1 && !roundEnd && 
                     <div> 
                         <h2> It's Your Turn! &nbsp;
-                            <button onClick={callLie}> That's a Lie! </button>
+                            <button onClick={callLie}> That's a Lie ! </button>
                         </h2>
                         <RenderBids/>
                     </div>
