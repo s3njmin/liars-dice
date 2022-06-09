@@ -128,11 +128,24 @@ function Game() {
         setRoundEnd(true)
         numDice[loserIdx]--
 
+        let win = true
+        for (let i = 1; i < 4; i++) {
+            if (numDice[i] != 0) {
+                win = false
+            }
+        }
+
         if (numDice[0] == 0) {
             alert("You've Lost!")
             setGameEnd(true)
-        } else if (numDice[loserIdx] == 0) {
+        }  else if (numDice[loserIdx] == 0) {
             alert("Player " + (loserIdx + 1) + " was eliminated!")
+            console.log("Player " + (loserIdx + 1) + " was eliminated!")
+        }
+        
+        if (win) {
+            alert("You've Won!")
+            setGameEnd(true)
         }
     }
 
@@ -272,21 +285,22 @@ function Game() {
     function RenderDice({idx}) {
         let hand = []
         let handInfo = (idx == 0) ? "Your Hand: " : "Player " + (+idx + +1) + "'s Hand: "
-        hand.push(<h2> {handInfo} </h2>)
+        hand.push(<h2 key="handInfo"> {handInfo} </h2>)
 
+        let key = 0
         dice[idx].map((roll) => (
-            hand.push(<img src={diceImg[roll - 1]} width="50"></img>)
+            hand.push(<img src={diceImg[roll - 1]} width="50" key={key++}/>)
         ))
         return hand
     }
 
     function RenderCount() {
         let finalCount = []
-        finalCount.push(<h2>Count:</h2>)
+        finalCount.push(<h2 key="countHDR">Count:</h2>)
         let i = 0
         count.map((cnt) => {
             finalCount.push(
-                <DiceCount i={i++} cnt={cnt}/>
+                <DiceCount i={i++} cnt={cnt} key={cnt*10+i}/>
             )
         })
         return finalCount
@@ -295,9 +309,9 @@ function Game() {
     function AIHands() {
         let hands = []
         for (let i = 1; i < 4; i++) {
-            hands.push( <h3>Player {i+1}</h3> )
+            hands.push( <h3 key={i}>Player {i+1}</h3> )
             for (let j = 0; j < numDice[i]; j++) {
-                hands.push(<img src={blankDice} width="20"/>)
+                hands.push(<img src={blankDice} width="20" key={i*10+j}/>)
             }
         }
         return hands
