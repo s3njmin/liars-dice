@@ -30,24 +30,22 @@ function combinations(n, r)
     }
 }
 
-const checkCount = (dices) => {
+const updateCount = (dices) => {
     let arr = [0, 0, 0, 0, 0, 0]
 
     for (let i = 0; i < 4; i++) {
         for (let j = 0; j < 5; j++) {
             arr[dices[i][j] - 1]++
         }
-        // console.log(" ")
     }
 
     return arr;
 }
 
-const rollDice = (dice) => {
+const rollDice = (numDice) => {
     let arr = [];
-    for (let i = 0; i < dice; i++) {
-        let num = Math.floor(Math.random() * 6) + 1
-        arr.push(num)
+    for (let i = 0; i < numDice; i++) {
+        arr.push(Math.floor(Math.random() * 6) + 1)
     }
     arr.sort()
     return arr;
@@ -61,7 +59,7 @@ function Game() {
         rollDice(numDice[2]),
         rollDice(numDice[3])
     ])
-    const [count, setCount] = useState(checkCount(dice));
+    const [count, setCount] = useState(updateCount(dice));
     const [playerTurn, setTurn] = useState(1);
     const [bid, setBid] = useState([1, 0]);
     const [roundEnd, setRoundEnd] = useState(false)
@@ -73,22 +71,24 @@ function Game() {
         let numDice3 = numDice[2]
         let numDice4 = numDice[3]
         
+        // if game over, reset dice counts to 5
         if (ended) {
             numDice1 = numDice2 = numDice3 = numDice4 = 5;
             setNumDice([5, 5, 5, 5])
             setGameEnd(false)
         }
 
+        // roll dice for each player
         let newDice = [
             rollDice(numDice1),
             rollDice(numDice2),
             rollDice(numDice3),
             rollDice(numDice4)
         ]
-
         setDice(newDice)
 
-        setCount(checkCount(newDice))
+        // reset other variables
+        setCount(updateCount(newDice))
         setTurn(1)
         setBid([1, 0])
         setRoundEnd(false)
@@ -109,15 +109,17 @@ function Game() {
     }
 
     function callLie (newBid, curTurn) {
-        if (newBid[0] == 1 && newBid[1] == 0) {
+        // prevents calling lie if no bids have been made
+        if (newBid[1] == 0) {
             alert("no bids yet!")
             return;
         }
-
         console.log("Player " + curTurn + " calls a lie!")
 
-        let loserIdx = curTurn - 1 //index of player who called the lie
+        // find index of player who loses a dice
+        let loserIdx = curTurn - 1
         let prevPlayer = findPrevPlayer(curTurn)
+        
         if (count[newBid[1] - 1] < newBid[0]) {
             alert("Player " + prevPlayer + " was lying!")
             loserIdx = prevPlayer - 1
@@ -126,8 +128,13 @@ function Game() {
         }
 
         setRoundEnd(true)
+        // setNumDice( nDice => {
+        //     nDice[loserIdx] = nDice[loserIdx] - 1
+        //     return nDice
+        // })
         numDice[loserIdx]--
 
+        // check if player 1 has won
         let win = true
         for (let i = 1; i < 4; i++) {
             if (numDice[i] != 0) {
@@ -135,6 +142,7 @@ function Game() {
             }
         }
 
+        // user feedback if lost, won, or eliminated another player
         if (numDice[0] == 0) {
             alert("You've Lost!")
             setGameEnd(true)
@@ -149,52 +157,51 @@ function Game() {
         }
     }
 
-    // useEffect(() => {
-    //     console.log(roundEnd)
-    // }, [setRoundEnd])
+    function calcProb(bid, side, turn) {
+        let N = 0
+        let req = bid
+        for (let i = 0; i < 4; i++) {
+            if (i + 1 != turn) {
+                N += numDice[i]
+            } else {
+                dice[i].forEach((val) => {
+                    if (val == side) {
+                        req--
+                    }
+                })
+            }
+        }
+        
+        if (req <= 0) {
+            return 100 //100% certain
+        }
+
+        let x = 1.0
+        for (let i = 0; i < req; i++) {
+            x -= combinations(N, i) * Math.pow((5 / 6), N - i) * Math.pow((1 / 6), i)
+            // console.log(bid + "|" + side + "|" + i + "|" + combinations(N, i))
+        }
+        
+        console.log(bid + "|" + side + "|" + N + "|" + req + "|" + x)
+        return Math.round(x * 100)
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     async function Simulate (prevBid) {
-        function calcProb(bid, side, turn) {
-            let N = 0
-            let req = bid
-            for (let i = 0; i < 4; i++) {
-                if (i + 1 != turn) {
-                    N += numDice[i]
-                } else {
-                    dice[i].forEach((val) => {
-                        if (val == side) {
-                            req--
-                        }
-                    })
-                }
-            }
-            
-            if (req <= 0) {
-                return 100 //100% certain
-            }
-
-            let x = 1.0
-            for (let i = 0; i < req; i++) {
-                x -= combinations(N, i) * Math.pow((5 / 6), N - i) * Math.pow((1 / 6), i)
-                // console.log(bid + "|" + side + "|" + i + "|" + combinations(N, i))
-            }
-            
-            console.log(bid + "|" + side + "|" + N + "|" + req + "|" + x)
-            return Math.round(x * 100)
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-
+        // store AI player bids, since state updates not immediate
         let newBid = [prevBid[0], prevBid[1]]
+
+        // 
         for (let i = 2; i <= 4; i++) {
+
             //skip if player eliminated
             if (numDice[i - 1] == 0) {
                 continue;
             }
-
-            await sleep(2000); // wait 3 secs
+            await sleep(3000); // wait 3 secs (simulate AI thinking)
 
             let high = [0, newBid[0], newBid[1]]
             for (let j = 1; j <= 6; j++) {

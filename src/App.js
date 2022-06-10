@@ -1,12 +1,10 @@
-import './App.css';
-import React, {useState} from 'react';
-import { render } from '@testing-library/react';
+import React from 'react';
 import { Game } from "./components/Game";
 
 
 function App() {
   return (
-    <Game />
+    <Game/>
   )
 }
 
