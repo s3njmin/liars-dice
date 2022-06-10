@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState} from 'react';
 import "./Game.css";
 import dice1 from "../images/dice1.png";
 import dice2 from "../images/dice2.png";
@@ -179,6 +179,7 @@ function Game() {
                 // console.log(bid + "|" + side + "|" + i + "|" + combinations(N, i))
             }
             
+            console.log(bid + "|" + side + "|" + N + "|" + req + "|" + x)
             return Math.round(x * 100)
         }
 
@@ -194,6 +195,7 @@ function Game() {
             }
 
             await sleep(2000); // wait 3 secs
+
             let high = [0, newBid[0], newBid[1]]
             for (let j = 1; j <= 6; j++) {
                 let curSide = newBid[1] + j
@@ -209,11 +211,10 @@ function Game() {
                 }
             }
 
-            // if probability of prev bid < highest prob
-            let prevProb = calcProb(newBid[0], newBid[1])
+            let prevProb = calcProb(newBid[0], newBid[1], i) //ignore case of i = 1 since simulate only for p2 - p4
             console.log(prevProb + "|" + high[0])
+            
             if (prevProb < 50 && high[0] < 70) {
-                // console.log(prevProb + "|" + high[0])
                 callLie(newBid, i)
                 return
             } else {
